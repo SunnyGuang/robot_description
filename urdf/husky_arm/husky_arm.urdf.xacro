@@ -1,0 +1,197 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="combined_robot">
+  <xacro:arg name="realsense_d435_enabled" default="true" />
+
+  <!-- Include the Xacro macros for the Husky and Panda -->
+  <xacro:include filename="$(find husky_panda_realsense)/urdf/husky.urdf.xacro"/>
+  <xacro:include filename="$(find husky_panda_realsense)/urdf/fr3.urdf.xacro"/>
+  <xacro:include filename="$(find husky_panda_realsense)/urdf/sit17_description.urdf.xacro"/>
+
+
+  <!-- Realsense Camera Primary -->
+  <xacro:arg name="realsense_enabled"             default="$(optenv HUSKY_REALSENSE_ENABLED 1)" />
+  <xacro:arg name="realsense_model"               default="$(optenv HUSKY_REALSENSE_MODEL d435)"/>
+  <xacro:arg name="realsense_topic"               default="$(optenv HUSKY_REALSENSE_TOPIC realsense)" />
+  <xacro:arg name="realsense_prefix"              default="$(optenv HUSKY_REALSENSE_PREFIX camera)" />
+  <xacro:arg name="realsense_parent"              default="$(optenv HUSKY_REALSENSE_PARENT fr3_hand)" />
+  <xacro:arg name="realsense_xyz"                 default="$(optenv HUSKY_REALSENSE_XYZ 0.06 0 0)" />
+  <xacro:arg name="realsense_rpy"                 default="$(optenv HUSKY_REALSENSE_RPY 0 -1.57 3.14)" />
+  <xacro:property name="realsense_model"          value="$(arg realsense_model)"/>
+
+
+  <xacro:include filename="$(find husky_description)/urdf/accessories/intel_realsense.urdf.xacro"/>
+
+  <xacro:property name="realsense_enabled" value="$(arg realsense_enabled)"/>
+  <xacro:if value="${realsense_enabled}">
+      <xacro:if value="${realsense_model == 'd435'}">
+        <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro" />
+      </xacro:if>
+      <xacro:if value="${realsense_model == 'd435i'}">
+        <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro" />
+      </xacro:if>
+      <xacro:if value="${realsense_model == 'd415'}">
+        <xacro:include filename="$(find realsense2_description)/urdf/_d415.urdf.xacro" />
+      </xacro:if>
+      <xacro:if value="${realsense_model == 'd455'}">
+        <xacro:include filename="$(find realsense2_description)/urdf/_d435.urdf.xacro" />
+      </xacro:if>
+  </xacro:if>
+
+  <xacro:if value="$(arg realsense_enabled)">
+    <xacro:realsense_sensor rs_model="$(arg realsense_model)"
+                            prefix="$(arg realsense_prefix)"
+                            parent="$(arg realsense_parent)"
+                            topic="$(arg realsense_topic)"
+                            include="0">
+      <origin xyz="$(arg realsense_xyz)" rpy="$(arg realsense_rpy)"/>
+    </xacro:realsense_sensor>
+  </xacro:if>
+
+  <!--sick laser-->
+  <xacro:arg name="laser_enabled"           default="$(optenv HUSKY_LMS1XX_ENABLED 0)" />
+  <xacro:arg name="laser_topic"             default="$(optenv HUSKY_LMS1XX_TOPIC front/scan)"/>
+  <xacro:arg name="laser_tower"             default="$(optenv HUSKY_LMS1XX_TOWER 0)"/>
+  <xacro:arg name="laser_prefix"            default="$(optenv HUSKY_LMS1XX_PREFIX front)"/>
+  <xacro:arg name="laser_parent"            default="$(optenv HUSKY_LMS1XX_PARENT metalwork)"/> 
+  <xacro:arg name="laser_xyz"               default="$(optenv HUSKY_LMS1XX_XYZ -0.2 0.0 0.3)" />
+  <xacro:arg name="laser_rpy"               default="$(optenv HUSKY_LMS1XX_RPY 0.0 0.0 0.0)" />
+
+  <xacro:include filename="$(find husky_description)/urdf/accessories/sick_lms1xx_mount.urdf.xacro"/>
+
+  <xacro:property name="M_PI" value="3.14159"/>
+
+  <xacro:if value="$(arg laser_enabled)">
+    <xacro:sick_lms1xx_mount prefix="$(arg laser_prefix)" parent="$(arg laser_parent)" topic="$(arg laser_topic)" robot_namespace="$(arg robot_namespace)" tower="$(arg laser_tower)">
+      <origin xyz="$(arg laser_xyz)" rpy="$(arg laser_rpy)"/>
+    </xacro:sick_lms1xx_mount>
+  </xacro:if>
+
+  <!-- UST10 Laser Primary -->
+  <xacro:arg name="laser_ust10_front_enabled" default="$(optenv HUSKY_UST10_ENABLED 0)" />
+  <xacro:arg name="laser_ust10_front_topic"   default="$(optenv HUSKY_UST10_TOPIC front/scan)" />
+  <xacro:arg name="laser_ust10_front_prefix"  default="$(optenv HUSKY_UST10_PREFIX front)" />
+  <xacro:arg name="laser_ust10_front_parent"  default="$(optenv HUSKY_UST10_PARENT metalwork)" />
+  <xacro:arg name="laser_ust10_front_xyz"     default="$(optenv HUSKY_UST10_XYZ -0.3 0.0 0.15)" />
+  <xacro:arg name="laser_ust10_front_rpy"     default="$(optenv HUSKY_UST10_RPY 0 0 0)" />
+
+  <xacro:include filename="$(find husky_description)/urdf/accessories/hokuyo_ust10.urdf.xacro" />
+
+  <xacro:if value="$(arg laser_ust10_front_enabled)">
+    <xacro:hokuyo_ust10_mount topic="$(arg laser_ust10_front_topic)" prefix="$(arg laser_ust10_front_prefix)" parent_link="$(arg laser_ust10_front_parent)">
+        <origin xyz="$(arg laser_ust10_front_xyz)" rpy="$(arg laser_ust10_front_rpy)" />
+      </xacro:hokuyo_ust10_mount>
+  </xacro:if>
+
+
+
+  <!-- <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro" />
+  <xacro:sensor_d435i name="panda_to_realsense" parent="fr3_link7">
+      <origin rpy="0 0 0" xyz="0.01 0 0.05"/>
+  </xacro:sensor_d435i> -->
+
+
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+  
+  <!-- PLUGIN TO INTEGRATE THE HARDWARE ABSTRACTION OF FRANKA EMIKA ROBOT. CRASH SINCE THE URDF NOW HAS MORE THAN 7 DOF -->
+   <!--gazebo>
+     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+       <controlPeriod>0.001</controlPeriod>
+          <robotSimType>franka_gazebo/FrankaHWSim</robotSimType>
+     </plugin>
+     <self_collide>true</self_collide>
+   </gazebo-->
+  
+    
+   <gazebo>
+    <plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <updateRate>50.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>imu/data</topicName>
+      <accelDrift>0.005 0.005 0.005</accelDrift>
+      <accelGaussianNoise>0.005 0.005 0.005</accelGaussianNoise>
+      <rateDrift>0.005 0.005 0.005 </rateDrift>
+      <rateGaussianNoise>0.005 0.005 0.005 </rateGaussianNoise>
+      <headingDrift>0.005</headingDrift>
+      <headingGaussianNoise>0.005</headingGaussianNoise>
+    </plugin>
+  </gazebo>
+
+  <!-- Laser properties -->
+  <xacro:property name="laser_update_rate" value="10.0" />
+  <xacro:property name="laser_max_range" value="30.0" />
+  <xacro:property name="laser_samples" value="720" />
+
+  <!-- add lasers -->
+  <gazebo reference="laser_rear">
+    <turnGravityOff>false</turnGravityOff>
+    <sensor type="gpu_ray" name="laser_rear">
+      <update_rate>${laser_update_rate}</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>${laser_samples}</samples>
+            <resolution>1</resolution>
+            <min_angle>${-M_PI}</min_angle>
+            <max_angle>${M_PI}</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>${laser_max_range}</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_planar_lidar" filename="libgazebo_ros_gpu_laser.so">
+        <topicName>front/scan</topicName>
+        <frameName>laser_rear</frameName>
+        <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- <gazebo reference="laser_front">
+    <turnGravityOff>false</turnGravityOff>
+    <sensor type="gpu_ray" name="laser_front">
+      <update_rate>${laser_update_rate}</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>${laser_samples}</samples>
+            <resolution>1</resolution>
+            <min_angle>${M_PI}</min_angle>
+            <max_angle>${M_PI *2.0}</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>${laser_max_range}</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_planar_lidar" filename="libgazebo_ros_gpu_laser.so">
+        <topicName>front/scan</topicName>
+        <frameName>laser_front</frameName>
+        <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      </plugin>
+    </sensor>
+  </gazebo> -->
+      
+      
+</robot>
